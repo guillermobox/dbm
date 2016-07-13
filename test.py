@@ -24,10 +24,16 @@ def run(name, config):
 
 def setup():
     os.environ["DBM_PATH"] = "/tmp/test.db"
-    os.remove("/tmp/test.db")
+    try:
+        os.remove("/tmp/test.db")
+    except OSError:
+        pass
 
 def setdown():
-    os.remove("/tmp/test.db")
+    try:
+        os.remove("/tmp/test.db")
+    except OSError:
+        pass
 
 def show(error, name, config):
     if error:
