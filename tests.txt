@@ -1,6 +1,0 @@
-single set|./dbm set guillermo TEST && ./dbm get guillermo|TEST|0
-invalid get|./dbm get no-existent||1
-double set|./dbm set guille 1 && ./dbm set guille 2 && ./dbm get guille|2|0
-increment|./dbm set x 10 && ./dbm inc x|11|0
-fail inc|./dbm set x qwe && ./dbm inc x||1
-fail inc2|./dbm set x 1 && ./dbm inc y||1
