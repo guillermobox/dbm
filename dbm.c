@@ -145,7 +145,8 @@ struct st_command commands[] = {
 int main(int argc, char *argv[])
 {
 	struct st_command * command;
-	const char * cmdname, * dbpath;
+	const char * cmdname;
+	char * dbpath;
 	GDBM_FILE db;
 	int err;
 
