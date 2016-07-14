@@ -5,7 +5,7 @@ dbm: dbm.o
 
 test: dbm
 	@echo 'TESTING basicTestSuite.yaml'
-	@python2 test.py basicTestSuite.yaml
+	@python2 ybt.py basicTestSuite.yaml
 
 clean:
 	rm -f *.o dbm

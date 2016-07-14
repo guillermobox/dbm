@@ -1,23 +1,38 @@
-SingleSet:
-       setup:   ./dbm set key TEST
-       run:     ./dbm get key
-       output:  TEST
-InvalidGet:
-       run:     ./dbm get key
-       error:   1
-DoubleSet:
-       setup:   ./dbm set key 1 && ./dbm set key 2
-       run:     ./dbm get key
-       output:  2
-Increment:
-       setup:   ./dbm set x 10
-       run:     ./dbm inc x
-       output:  11
-FailIncrement:
-       setup:   ./dbm set x TEST
-       run:     ./dbm inc x
-       error:   1
-FailIncrement2:
-       setup:   ./dbm set x 1
-       run:     ./dbm inc y
-       error:   1
+configuration:
+  environment : DBM_PATH=/tmp/test.db
+  volatile    : /tmp/test.db
+
+tests:
+
+  - name   : SingleSet
+    setup  : ./dbm set key TEST
+    run    : ./dbm get key
+    output : TEST
+
+  - name   : SetReturnsNothing
+    run    : ./dbm set key TEST
+    output :
+
+  - name   : InvalidGet
+    run    : ./dbm get key
+    return : 1
+
+  - name   : DoubleSet
+    setup  : [./dbm set key 1, ./dbm set key 2]
+    run    : ./dbm get key
+    output : 2
+
+  - name   : Increment
+    setup  : ./dbm set x 10
+    run    : ./dbm inc x
+    output : 11
+
+  - name   : FailIncrement
+    setup  : ./dbm set x TEST
+    run    : ./dbm inc x
+    return : 1
+
+  - name   : FailIncrement2
+    setup  : ./dbm set x 1
+    run    : ./dbm inc y
+    return : 1
