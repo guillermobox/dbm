@@ -114,8 +114,9 @@ int com_inc(int argc, char *argv[], GDBM_FILE db)
 
 	value = gdbm_fetch(db, key);
 	if (value.dptr == NULL) {
-		error("Key not found: %s", key.dptr);
-		return 1;
+		value.dptr = "1";
+		value.dsize = 2;
+		return gdbm_store(db, key, value, GDBM_REPLACE);
 	}
 
 	n = strtol(value.dptr, &dptr, 10);

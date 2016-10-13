@@ -64,8 +64,9 @@ tests:
     run    : ./dbm inc x
     return : 1
 
-  - name   : FailIncrement2
-    setup  : ./dbm set x 1
-    run    : ./dbm inc y
-    return : 1
+  - name   : IncrementCreation
+    setup  : ./dbm inc x
+    run    : ./dbm get x
+    output : 1
+    return : 0
 
