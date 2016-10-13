@@ -1,5 +1,4 @@
-DBM
-===
+# DBM
 
 Use a lightweight (and outdated) database from the terminal, scripting ready!
 
