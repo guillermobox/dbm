@@ -50,7 +50,7 @@ tests:
   - name   : Increment
     setup  : ./dbm set x 10
     run    : ./dbm inc x
-    output : 11
+    output :
     return : 0
 
   - name   : IncrementGet

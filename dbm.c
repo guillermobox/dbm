@@ -133,7 +133,6 @@ int com_inc(int argc, char *argv[], GDBM_FILE db)
 	snprintf(dptr, value.dsize, "%u", n);
 	value.dptr = dptr;
 
-	printf("%s", value.dptr);
 	gdbm_store(db, key, value, GDBM_REPLACE);
 	free(dptr);
 	return 0;
