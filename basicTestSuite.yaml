@@ -8,24 +8,56 @@ tests:
     setup  : ./dbm set key TEST
     run    : ./dbm get key
     output : TEST
+    return : 0
+
+  - name   : SingleRemove
+    setup  : ./dbm set key TEST
+    run    : ./dbm remove key
+    output :
+    return : 0
 
   - name   : SetReturnsNothing
     run    : ./dbm set key TEST
     output :
+    return : 0
+
+  - name   : KeyWithSpaces
+    setup  : ./dbm set "my key" "my value"
+    run    : ./dbm get "my key"
+    output : my value
+    return : 0
+
+  - name   : Very long key
+    setup  : ./dbm set "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" TEST
+    run    : ./dbm get "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+    output : TEST
+    return : 0
 
   - name   : InvalidGet
     run    : ./dbm get key
     return : 1
 
+  - name   : InvalidRemove
+    run    : ./dbm remove key
+    return : 255
+
   - name   : DoubleSet
-    setup  : [./dbm set key 1, ./dbm set key 2]
+    setup  : ./dbm set key 1 && ./dbm set key 2
     run    : ./dbm get key
     output : 2
+    return : 0
 
   - name   : Increment
     setup  : ./dbm set x 10
     run    : ./dbm inc x
     output : 11
+    return : 0
+
+  - name   : IncrementGet
+    setup  : [./dbm set x 10, ./dbm inc x]
+    run    : ./dbm get x
+    output : 11
+    return : 0
 
   - name   : FailIncrement
     setup  : ./dbm set x TEST
@@ -36,3 +68,4 @@ tests:
     setup  : ./dbm set x 1
     run    : ./dbm inc y
     return : 1
+

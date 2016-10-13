@@ -42,6 +42,7 @@ int com_set(int argc, char *argv[], GDBM_FILE db)
 int com_remove(int argc, char *argv[], GDBM_FILE db)
 {
 	datum key;
+	int err;
 
 	if (argc < 1) {
 		error("Please provide the key to remove");
@@ -49,9 +50,13 @@ int com_remove(int argc, char *argv[], GDBM_FILE db)
 	}
 
 	key.dptr = argv[0];
-	key.dsize = strlen(argv[0]);
+	key.dsize = strlen(argv[0]) + 1;
 
-	return gdbm_delete(db, key);
+	err = gdbm_delete(db, key);
+	if (err) {
+		error("Key not found");
+	}
+	return err;
 }
 
 int com_get(int argc, char *argv[], GDBM_FILE db)
