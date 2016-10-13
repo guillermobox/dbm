@@ -13,6 +13,12 @@ def readlist(dict, key):
         ret = [ret]
     return ret
 
+class FailureReason:
+    SETUP = 1
+    TIME  = 2
+    OUTPUT = 3
+    RETURN = 4
+
 class Suite(object):
     def __init__(self, path):
 
@@ -22,8 +28,11 @@ class Suite(object):
             except yaml.scanner.ScannerError as e:
                 raise Exception("Input file is not YAML, error at line %d"%(e.problem_mark.line,))
 
+        self.name,_ = os.path.splitext(os.path.basename(path))
         self.parseConfiguration(suite['configuration'])
         self.parseTests(suite['tests'])
+        self.failedTests = []
+        self.completedTests = []
 
     def parseConfiguration(self, config):
         self.environment = readlist(config, 'environment')
@@ -38,11 +47,24 @@ class Suite(object):
         self.tests.append(Test(configuration))
 
     def runTests(self):
+        print '{0:=^80}'.format(self.name)
         for test in self.tests:
+            print '{0:^36}'.format(test.name),
             self.setup()
             err = test.run()
+            if err:
+                self.failedTests.append(test)
+            else:
+                self.completedTests.append(test)
             test.show(err)
             self.setdown()
+        if len(self.failedTests) == 0:
+            print '{0:=^80}'.format('All tests completed successfully')
+        else:
+            msg = 'Failed {0} tests of {1}'.format(len(self.failedTests), len(self.tests))
+            print '{0:=^80}'.format(msg)
+            for test in self.failedTests:
+                print self.name + '.' + test.name, test.showDiagnostics()
 
     def setup(self):
         self.savedEnvironment = dict()
@@ -91,19 +113,24 @@ class Test(object):
 
     def show(self, error):
         if error:
-            print "{0:^20}\033[31mFAIL\033[0m {1}".format(self.name[0:20], error)
+            print "\033[31mFAIL\033[0m {0:^35}".format(error)
         else:
-            print "{0:^20}\033[32m OK \033[0m".format(self.name[0:20])
+            print "\033[32m OK \033[0m"
+
+    def abort(self, msg, reason):
+        self.abortmsg = msg
+        self.reason = reason
+        return msg
 
     def run(self):
         for command in self.setup:
             if subprocess.call(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
-                return "Setup failed"
+                return self.abort("Setup failed", FailureReason.SETUP)
 
-        process = subprocess.Popen("exec " + self.command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        self.process = subprocess.Popen("exec " + self.command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
         def target():
-            (stdout, stderr) = process.communicate(self.input)
+            (stdout, stderr) = self.process.communicate(self.input)
             self.runResults = (stdout, stderr)
 
         thread = threading.Thread(target=target)
@@ -113,15 +140,21 @@ class Test(object):
         if thread.is_alive():
             process.kill()
             thread.join()
-            return "Timeout of %d seconds"%(self.timeout,)
+            return self.abort("Timeout of %d seconds"%(self.timeout,), FailureReason.TIME)
 
-        if self.stdout != None and str(self.stdout).strip() != self.runResults[0]:
-            return "Wrong output"
+        if self.stdout != None and str(self.stdout).strip() != self.runResults[0].strip():
+            return self.abort("Wrong output", FailureReason.OUTPUT)
 
-        if self.retval and self.retval != process.returncode:
-            return "Wrong return value"
+        if self.retval != None and self.retval != self.process.returncode:
+            return self.abort("Wrong return value", FailureReason.RETURN)
 
         return None
+
+    def showDiagnostics(self):
+        if self.reason == FailureReason.OUTPUT:
+            return "Expected output '{0}' but found '{1}'".format(str(self.stdout).strip(), self.runResults[0].strip())
+        elif self.reason == FailureReason.RETURN:
+            return "Expected return value '{0}' but found '{1}'".format(self.retval, self.process.returncode)
 
 def main():
     suite = Suite(sys.argv[1])

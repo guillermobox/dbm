@@ -4,7 +4,6 @@ LDLIBS += -L/usr/lib/x86_64-linux-gnu/ -lgdbm
 dbm: dbm.o
 
 test: dbm
-	@echo 'TESTING basicTestSuite.yaml'
 	@python2 ybt.py basicTestSuite.yaml
 
 clean:
