@@ -74,6 +74,7 @@ int com_get(int argc, char *argv[], GDBM_FILE db)
 	value = gdbm_fetch(db, key);
 	if (value.dptr) {
 		printf("%s", value.dptr);
+		free(value.dptr);
 		return 0;
 	} else {
 		error("Key not found");
@@ -123,6 +124,7 @@ int com_inc(int argc, char *argv[], GDBM_FILE db)
 
 	if (*value.dptr != '\0' && *dptr != '\0') {
 		error("Value is not an integer: %s", value.dptr);
+		free(value.dptr);
 		return 1;
 	}
 
@@ -131,6 +133,7 @@ int com_inc(int argc, char *argv[], GDBM_FILE db)
 	value.dsize = snprintf(NULL, 0, "%u", n) + 1;
 	dptr = malloc(value.dsize);
 	snprintf(dptr, value.dsize, "%u", n);
+	free(value.dptr);
 	value.dptr = dptr;
 
 	gdbm_store(db, key, value, GDBM_REPLACE);
